@@ -1,6 +1,6 @@
 ## Trinity Generator
 
-This package is a code generator for the Trinity framework.
+This package is a code generator for the Trinity package.
 
 ## Usage
 
