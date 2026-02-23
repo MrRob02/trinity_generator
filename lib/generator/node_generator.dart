@@ -28,6 +28,9 @@ class NodeGenerator extends Generator {
           '_node.${field.name}.readable.value;',
         );
       }
+
+      buffer.writeln('}');
+      buffer.writeln();
     }
 
     if (buffer.isEmpty) return null;
