@@ -1,7 +1,7 @@
 name: trinity_generator
 description: "A new Flutter package project."
 version: 0.1.0
-repository:
+repository: https://github.com/MrRob02/trinity_generator
 
 environment:
   sdk: ^3.10.8
