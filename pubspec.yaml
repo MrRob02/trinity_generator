@@ -1,6 +1,6 @@
 name: trinity_generator
 description: "Code generator for Trinity."
-version: 0.1.0
+version: 0.1.1
 
 homepage: https://github.com/MrRob02/trinity
 repository: https://github.com/MrRob02/trinity
@@ -14,7 +14,7 @@ dependencies:
     sdk: flutter
   build: ^4.0.4
   source_gen: ^4.2.0
-  analyzer: ^10.0.1
+  analyzer: ">=6.0.0 <11.0.0"
   trinity: ^0.1.0
 
 dev_dependencies:
