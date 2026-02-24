@@ -4,5 +4,4 @@ builders:
     builder_factories: ["nodeBuilder"]
     build_extensions: {".dart": [".readable.dart"]}
     auto_apply: dependents
-    build_to: cache
-    applies_builders: ["source_gen:combining_builder"]
+    build_to: source

@@ -9,3 +9,7 @@
 ## 0.1.2
 
 * Fixed node builder configuration to use `.readable.dart` extension and add closing braces to generated code.
+
+## 0.1.3
+
+* Fixed builder to generate only if there are signal fields.

@@ -12,7 +12,6 @@ class NodeGenerator extends Generator {
       if (!_extendsNodeInterface(cls)) continue;
 
       final signalFields = _getSignalFields(cls);
-      if (signalFields.isEmpty) continue;
       final className = cls.name;
       final readableName = 'Readable$className';
 
