@@ -13,3 +13,7 @@
 ## 0.1.3
 
 * Fixed builder to generate only if there are signal fields.
+
+## 0.1.4
+
+* Removed `trinity` dependency.
