@@ -9,9 +9,11 @@ class NodeGenerator extends Generator {
     final buffer = StringBuffer();
 
     for (final cls in library.classes) {
+      if (!_hasReadableAnnotation(cls)) continue;
       if (!_extendsNodeInterface(cls)) continue;
 
       final signalFields = _getSignalFields(cls);
+      if (signalFields.isEmpty) continue;
       final className = cls.name;
       final readableName = 'Readable$className';
 
@@ -37,6 +39,13 @@ class NodeGenerator extends Generator {
     final sourceUri = library.element.firstFragment.source.uri;
     final fileName = sourceUri.pathSegments.last;
     return "part of '$fileName';\n\n$buffer";
+  }
+
+  // Returns true if the class is annotated with @Readable or @readable
+  bool _hasReadableAnnotation(ClassElement cls) {
+    return cls.metadata.annotations.any(
+      (a) => a.element?.enclosingElement?.name == 'Readable',
+    );
   }
 
   // Sube la cadena de herencia buscando NodeInterface
