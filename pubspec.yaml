@@ -1,6 +1,6 @@
 name: trinity_generator
 description: "Code generator for Trinity."
-version: 0.1.5
+version: 0.1.6
 
 homepage: https://github.com/MrRob02/trinity
 repository: https://github.com/MrRob02/trinity

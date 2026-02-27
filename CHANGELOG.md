@@ -1,3 +1,7 @@
+## 0.1.6
+
+* Added `error`, `hasError`, and `isLoading` properties to the generated code.
+
 ## 0.1.5
 
 * Added marker annotation `@Readable()`.

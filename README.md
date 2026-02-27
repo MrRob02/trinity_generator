@@ -16,3 +16,21 @@ class MyNode extends NodeInterface{
   MyNode(this.name);
 }
 ```
+
+Then the generated file
+
+```dart
+// ...
+
+class ReadableMyNode {
+  final MyNode _node;
+  const ReadableMyNode(this._node);
+
+  String get name => _node.name.readable.value;
+
+  ///These properties belong to NodeInterface
+  Object? get error => _node.error.value;
+  bool get hasError => error != null;
+  bool get isLoading => _node.isLoading.value;
+}
+```

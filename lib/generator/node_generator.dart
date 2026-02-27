@@ -3,6 +3,8 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 
+enum EnumDefaultSignals { error, loading }
+
 class NodeGenerator extends Generator {
   @override
   String? generate(LibraryReader library, BuildStep buildStep) {
@@ -29,6 +31,9 @@ class NodeGenerator extends Generator {
           '_node.${field.name}.readable.value;',
         );
       }
+      buffer.writeln('  Object? get error => _node.error.value;');
+      buffer.writeln('  bool get hasError => error != null;');
+      buffer.writeln('  bool get isLoading => _node.isLoading.value;');
 
       buffer.writeln('}');
       buffer.writeln();
