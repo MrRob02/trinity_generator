@@ -71,7 +71,9 @@ class NodeGenerator extends Generator {
   bool _isSignal(DartType type) {
     if (type is! InterfaceType) return false;
     if (type.element.name == 'Signal') return true;
-    return type.element.allSupertypes.any((t) => t.element.name == 'Signal');
+    return type.element.allSupertypes.any(
+      (t) => t.element.name == 'BaseSignal',
+    );
   }
 
   // Extrae T de Signal<T>, subiendo supertypes si hace falta
