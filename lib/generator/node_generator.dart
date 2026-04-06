@@ -26,14 +26,20 @@ class NodeGenerator extends Generator {
 
       for (final field in signalFields) {
         final valueType = _resolveSignalValueType(field);
+        final accessor = _isBaseSignalOnly(field.type)
+            ? '.value'
+            : '.readable.value';
         buffer.writeln(
           '  $valueType get ${field.name} => '
-          '_node.${field.name}.readable.value;',
+          '_node.${field.name}$accessor;',
         );
       }
       buffer.writeln('  Object? get error => _node.error.value;');
       buffer.writeln('  bool get hasError => error != null;');
       buffer.writeln('  bool get isLoading => _node.isLoading.value;');
+      buffer.writeln(
+        '  bool get fullScreenLoading => _node.fullScreenLoading.value;',
+      );
 
       buffer.writeln('}');
       buffer.writeln();
@@ -74,6 +80,17 @@ class NodeGenerator extends Generator {
     return type.element.allSupertypes.any(
       (t) => t.element.name == 'BaseSignal',
     );
+  }
+
+  /// Returns true when the type derives from BaseSignal but NOT from Signal
+  /// (i.e. it has no .readable — access via .value directly).
+  bool _isBaseSignalOnly(DartType type) {
+    if (type is! InterfaceType) return false;
+    if (type.element.name == 'BaseSignal') return true;
+    final supertypes = type.element.allSupertypes;
+    final hasBaseSignal = supertypes.any((t) => t.element.name == 'BaseSignal');
+    final hasSignal = supertypes.any((t) => t.element.name == 'Signal');
+    return hasBaseSignal && !hasSignal;
   }
 
   // Extrae T de Signal<T>, subiendo supertypes si hace falta

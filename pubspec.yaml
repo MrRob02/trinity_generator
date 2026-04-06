@@ -1,6 +1,6 @@
 name: trinity_generator
 description: "Code generator for Trinity."
-version: 0.1.7
+version: 0.1.8
 
 homepage: https://github.com/MrRob02/trinity
 repository: https://github.com/MrRob02/trinity
@@ -21,7 +21,6 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   build_runner: ^2.11.1
-
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
