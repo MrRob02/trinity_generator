@@ -69,9 +69,14 @@ class NodeGenerator extends Generator {
     return false;
   }
 
-  // Campos cuyo tipo sea Signal<T> o derive de él
+  // Campos cuyo tipo sea Signal<T> o derive de él.
+  // Incluye campos con inicializador inline (late final x = registerSignal(...))
+  // y también campos `late` declarados con tipo explícito pero inicializados
+  // en el constructor (late final Signal<T> x; → this.x = registerSignal(...)).
   List<FieldElement> _getSignalFields(ClassElement cls) {
-    return cls.fields.where((f) => _isSignal(f.type)).toList();
+    return cls.fields
+        .where((f) => !f.isOriginGetterSetter && _isSignal(f.type))
+        .toList();
   }
 
   bool _isSignal(DartType type) {

@@ -1,3 +1,7 @@
+## 0.1.9
+
+* Fixed generator to consider not initialized fields.
+
 ## 0.1.8
 
 * Add BaseSignalSupport for generator
