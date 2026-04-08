@@ -15,7 +15,7 @@ class NodeGenerator extends Generator {
       if (!_extendsNodeInterface(cls)) continue;
 
       final signalFields = _getSignalFields(cls);
-      if (signalFields.isEmpty) continue;
+      // if (signalFields.isEmpty) continue;
       final className = cls.name;
       final readableName = 'Readable$className';
 
@@ -110,12 +110,15 @@ class NodeGenerator extends Generator {
       return type.typeArguments.first.getDisplayString();
     }
 
-    // Si es subtype (BridgeSignal, etc.), buscamos en los supertypes
-    // del TIPO INSTANCIADO (no del elemento)
-    final signalType = type
-        .allSupertypes // <-- aquí el cambio
-        .where((t) => t.element.name == 'Signal')
-        .firstOrNull;
+    // Si es subtype (BridgeSignal, ProtectedSignal, etc.), buscamos en los
+    // supertypes del TIPO INSTANCIADO (no del elemento).
+    // Primero intentamos con Signal<T>; si no existe (e.g. ProtectedSignal
+    // hereda directamente de BaseSignal<T>), caemos a BaseSignal<T>.
+    final allSupertypes = type.allSupertypes;
+
+    final signalType =
+        allSupertypes.where((t) => t.element.name == 'Signal').firstOrNull ??
+        allSupertypes.where((t) => t.element.name == 'BaseSignal').firstOrNull;
 
     if (signalType == null || signalType.typeArguments.isEmpty) {
       return 'dynamic';

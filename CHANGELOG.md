@@ -1,3 +1,8 @@
+## 0.1.11
+
+* Fixed generator to generate readable without signals.
+* Fixed generator to guess the type of protected signals.
+
 ## 0.1.10
 * Ignore private fields in generator
 
