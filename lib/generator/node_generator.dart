@@ -25,6 +25,7 @@ class NodeGenerator extends Generator {
       buffer.writeln();
 
       for (final field in signalFields) {
+        if (field.isPrivate) continue;
         final valueType = _resolveSignalValueType(field);
         final accessor = _isBaseSignalOnly(field.type)
             ? '.value'

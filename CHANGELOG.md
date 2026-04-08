@@ -1,5 +1,7 @@
-## 0.1.9
+## 0.1.10
+* Ignore private fields in generator
 
+## 0.1.9
 * Fixed generator to consider not initialized fields.
 
 ## 0.1.8
