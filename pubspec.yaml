@@ -1,6 +1,6 @@
 name: trinity_generator
 description: "A code generator for state manager Trinity."
-version: 0.1.10
+version: 0.1.11
 
 homepage: https://github.com/MrRob02/trinity
 repository: https://github.com/MrRob02/trinity
