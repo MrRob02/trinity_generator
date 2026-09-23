@@ -1,5 +1,8 @@
-## 0.1.11
+## 1.0.0
+* Add support for nullable signals.
+* Update dependencies.
 
+## 0.1.11
 * Fixed generator to generate readable without signals.
 * Fixed generator to guess the type of protected signals.
 
