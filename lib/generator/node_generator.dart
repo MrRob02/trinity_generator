@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
@@ -26,10 +27,11 @@ class NodeGenerator extends Generator {
 
       for (final field in signalFields) {
         if (field.isPrivate) continue;
+        final isNullable = _isNullableSignal(field.type);
         final valueType = _resolveSignalValueType(field);
-        final accessor = _isBaseSignalOnly(field.type)
-            ? '.value'
-            : '.readable.value';
+        final accessor = _isBaseSignalOnly(_unwrapNullable(field.type))
+            ? (isNullable ? '?.value' : '.value')
+            : (isNullable ? '?.readable.value' : '.readable.value');
         buffer.writeln(
           '  $valueType get ${field.name} => '
           '_node.${field.name}$accessor;',
@@ -76,12 +78,34 @@ class NodeGenerator extends Generator {
   // en el constructor (late final Signal<T> x; → this.x = registerSignal(...)).
   List<FieldElement> _getSignalFields(ClassElement cls) {
     return cls.fields
-        .where((f) => !f.isOriginGetterSetter && _isSignal(f.type))
+        .where(
+          (f) =>
+              !f.isOriginGetterSetter &&
+              (_isSignal(f.type) || _isNullableSignal(f.type)),
+        )
         .toList();
+  }
+
+  /// Returns true when [type] is a nullable signal type, e.g. `Signal<T>?`.
+  bool _isNullableSignal(DartType type) {
+    if (type is! InvalidType && type.nullabilitySuffix == NullabilitySuffix.question) {
+      return _isSignal(_unwrapNullable(type));
+    }
+    return false;
+  }
+
+  /// Strips the `?` suffix from a nullable type, returning the underlying type.
+  DartType _unwrapNullable(DartType type) {
+    if (type is InterfaceType && type.nullabilitySuffix == NullabilitySuffix.question) {
+      // Re-wrap as non-nullable by accessing the element's type directly.
+      return type.element.thisType;
+    }
+    return type;
   }
 
   bool _isSignal(DartType type) {
     if (type is! InterfaceType) return false;
+    if (type.nullabilitySuffix == NullabilitySuffix.question) return false;
     if (type.element.name == 'Signal') return true;
     return type.element.allSupertypes.any(
       (t) => t.element.name == 'BaseSignal',
@@ -90,6 +114,7 @@ class NodeGenerator extends Generator {
 
   /// Returns true when the type derives from BaseSignal but NOT from Signal
   /// (i.e. it has no .readable — access via .value directly).
+  /// Pass the already-unwrapped (non-nullable) type.
   bool _isBaseSignalOnly(DartType type) {
     if (type is! InterfaceType) return false;
     if (type.element.name == 'BaseSignal') return true;
@@ -99,31 +124,52 @@ class NodeGenerator extends Generator {
     return hasBaseSignal && !hasSignal;
   }
 
-  // Extrae T de Signal<T>, subiendo supertypes si hace falta
+  // Extrae T de Signal<T> (o Signal<T>?), subiendo supertypes si hace falta.
+  // Si el campo es nullable, el tipo resultante también es nullable (T?).
   String _resolveSignalValueType(FieldElement field) {
-    final type = field.type;
-    if (type is! InterfaceType) return 'dynamic';
+    final rawType = field.type;
+    final isNullable = _isNullableSignal(rawType);
+    // Use rawType directly — an InterfaceType with NullabilitySuffix.question
+    // already carries the concrete type arguments (e.g. Signal<String>?).
+    // _unwrapNullable would call element.thisType which strips instantiation
+    // back to the raw generic (e.g. Signal<V>), losing the actual type arg.
+    if (rawType is! InterfaceType) return isNullable ? 'dynamic?' : 'dynamic';
+
+    String valueType;
 
     // Si el tipo ya ES Signal<T>, tomamos el argumento directo
-    if (type.element.name == 'Signal') {
-      if (type.typeArguments.isEmpty) return 'dynamic';
-      return type.typeArguments.first.getDisplayString();
+    if (rawType.element.name == 'Signal') {
+      if (rawType.typeArguments.isEmpty) {
+        valueType = 'dynamic';
+      } else {
+        valueType = rawType.typeArguments.first.getDisplayString();
+      }
+    } else {
+      // Si es subtype (BridgeSignal, ProtectedSignal, etc.), buscamos en los
+      // supertypes del TIPO INSTANCIADO (no del elemento).
+      // Primero intentamos con Signal<T>; si no existe (e.g. ProtectedSignal
+      // hereda directamente de BaseSignal<T>), caemos a BaseSignal<T>.
+      final allSupertypes = rawType.allSupertypes;
+
+      final signalType =
+          allSupertypes.where((t) => t.element.name == 'Signal').firstOrNull ??
+          allSupertypes
+              .where((t) => t.element.name == 'BaseSignal')
+              .firstOrNull;
+
+      if (signalType == null || signalType.typeArguments.isEmpty) {
+        valueType = 'dynamic';
+      } else {
+        valueType = signalType.typeArguments.first.getDisplayString();
+      }
     }
 
-    // Si es subtype (BridgeSignal, ProtectedSignal, etc.), buscamos en los
-    // supertypes del TIPO INSTANCIADO (no del elemento).
-    // Primero intentamos con Signal<T>; si no existe (e.g. ProtectedSignal
-    // hereda directamente de BaseSignal<T>), caemos a BaseSignal<T>.
-    final allSupertypes = type.allSupertypes;
-
-    final signalType =
-        allSupertypes.where((t) => t.element.name == 'Signal').firstOrNull ??
-        allSupertypes.where((t) => t.element.name == 'BaseSignal').firstOrNull;
-
-    if (signalType == null || signalType.typeArguments.isEmpty) {
-      return 'dynamic';
+    // If the field itself is nullable, the exposed getter must also be nullable.
+    // Avoid double `?` if the inner type is already nullable (e.g. Signal<T?>).
+    if (isNullable && !valueType.endsWith('?')) {
+      valueType = '$valueType?';
     }
 
-    return signalType.typeArguments.first.getDisplayString();
+    return valueType;
   }
 }
